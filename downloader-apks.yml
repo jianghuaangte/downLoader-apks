@@ -1,0 +1,58 @@
+name: Download APKs with apkeep and Upload to Release
+
+on:
+  workflow_dispatch:    # 手动触发
+  schedule:
+    - cron: "0 3 * * *" # 每天 UTC 3 点自动运行
+
+jobs:
+  download-and-upload-apks:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout 仓库
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ 安装 Rust + apkeep
+      - name: Install Rust and apkeep
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          cargo install apkeep
+
+      # 3️⃣ 创建下载目录
+      - name: Prepare directories
+        run: mkdir -p apks
+
+      # 4️⃣ 下载 APKs
+      - name: Download APKs
+        run: |
+          # 示例：下载 Chrome 和 Firefox APK，从 APKPure 源（无需账号）
+          apkeep -a com.android.chrome -d apk-pure -o parallel=2 ./apks
+          apkeep -a org.mozilla.firefox -d apk-pure -o parallel=2 ./apks
+
+          # 如果需要 Google Play（需在 secrets 中保存 aas_token）
+          # mkdir -p ~/.config/apkeep
+          # echo "[google]" > ~/.config/apkeep/apkeep.ini
+          # echo "email = ${{ secrets.GOOGLE_EMAIL }}" >> ~/.config/apkeep/apkeep.ini
+          # echo "aas_token = ${{ secrets.GOOGLE_AAS_TOKEN }}" >> ~/.config/apkeep/apkeep.ini
+          # apkeep -a com.instagram.android -d google-play -i ~/.config/apkeep/apkeep.ini ./apks
+
+      # 5️⃣ 上传到 GitHub Release
+      - name: Upload APKs to Release
+        run: |
+          tag="latest-apks"
+          
+          # 如果 release 不存在就创建
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --title "Latest APKs" --notes "Daily sync of APKs via apkeep"
+          fi
+          
+          # 上传下载的 APK 文件
+          for file in apks/*.apk; do
+            echo "Uploading $file ..."
+            gh release upload "$tag" "$file" --clobber
+          done
+        env:
+          GH_TOKEN: ${{ secrets.JIANG_PAT_TOKEN }}
