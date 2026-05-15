@@ -38,7 +38,11 @@ jobs:
           # echo "email = ${{ secrets.GOOGLE_EMAIL }}" >> ~/.config/apkeep/apkeep.ini
           # echo "aas_token = ${{ secrets.GOOGLE_AAS_TOKEN }}" >> ~/.config/apkeep/apkeep.ini
           # apkeep -a com.instagram.android -d google-play -i ~/.config/apkeep/apkeep.ini ./apks
-
+      - name: Check APKs
+        run: |
+          echo "Files in apks directory:"
+          ls -l apks
+    
       # 5️⃣ 上传到 GitHub Release
       - name: Upload APKs to Release
         run: |
