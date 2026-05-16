@@ -29,8 +29,8 @@ jobs:
       - name: Download APKs
         run: |
           # 示例：下载 Chrome 和 Firefox APK，从 APKPure 源（无需账号）
-          apkeep -a com.android.chrome -d apk-pure -o parallel=2 ./apks
-          apkeep -a org.mozilla.firefox -d apk-pure -o parallel=2 ./apks
+          apkeep -a com.android.chrome -d apk-pure -o split_apk=false ./apks
+          apkeep -a org.mozilla.firefox -d apk-pure -o split_apk=false ./apks
 
           # 如果需要 Google Play（需在 secrets 中保存 aas_token）
           # mkdir -p ~/.config/apkeep
