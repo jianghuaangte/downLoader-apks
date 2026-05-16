@@ -54,7 +54,7 @@ jobs:
           fi
           
           # 上传下载的 APK 文件
-          for file in apks/*.apk; do
+          for file in apks/*.*apk; do
             echo "Uploading $file ..."
             gh release upload "$tag" "$file" --clobber
           done
